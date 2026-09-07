@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>small wins jar</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page" id="page">
+
+  <!-- ============ NAME ENTRY VIEW ============ -->
+  <div id="entryView" style="display:none;">
+    <h1 class="title">small wins jar</h1>
+    <p class="subtitle">what should we call you?</p>
+
+    <div class="entry-wrap">
+      <div class="row">
+        <input id="nameInput" class="input-pill" type="text" placeholder="your name" maxlength="24" autofocus>
+        <button id="openJarBtn" class="btn btn-orange">open my jar</button>
+      </div>
+      <p class="entry-note">your wins are saved privately on this device — nothing is uploaded, and no one else can see them, unless you choose to share a link.</p>
+    </div>
+  </div>
+
+  <!-- ============ SHARED JAR BANNER (only if ?jar=) ============ -->
+  <div id="sharedBanner" style="display:none;">
+    <div class="shared-banner">
+      🎁 you're viewing <span class="owner" id="sharedOwnerName"></span>'s small wins jar
+    </div>
+    <div class="shared-actions">
+      <button id="saveCopyBtn" class="btn btn-blue">save a copy for me</button>
+      <button id="startOwnBtn" class="btn btn-outline">start my own jar</button>
+    </div>
+  </div>
+
+  <!-- ============ MAIN JAR VIEW ============ -->
+  <div id="jarView" style="display:none;">
+    <h1 class="title">small wins jar</h1>
+    <p class="subtitle">build confidence, one tiny win at a time</p>
+
+    <div class="row" id="addRow">
+      <input id="winInput" class="input-pill" type="text" placeholder="add one small win" maxlength="80">
+      <button id="paintBtn" class="btn btn-orange">paint a star</button>
+    </div>
+
+    <div class="jar-scene">
+      <div class="doodles" id="doodles"></div>
+      <div class="jar-wrap" id="jarWrap">
+        <div class="toast" id="toast">proud of you</div>
+        <div id="jarSvgHolder"></div>
+        <div class="stars-layer" id="starsLayer"></div>
+        <div class="spotlight-star" id="spotlightStar"></div>
+      </div>
+    </div>
+
+    <div class="shake-btn-wrap">
+      <button id="shakeBtn" class="btn btn-blue">shake the jar</button>
+    </div>
+
+    <p class="count-line" id="countLine">0 tiny wins and counting <span class="heart">♥</span></p>
+
+    <div class="quote-block" id="quoteBlock" style="display:none;">
+      <p class="quote-text script" id="quoteText"></p>
+      <p class="quote-date" id="quoteDate"></p>
+    </div>
+
+    <div class="links-row" id="ownerLinksRow">
+      <a id="seeAllLink" href="log.html">see all your wins</a>
+      &nbsp;·&nbsp;
+      <a class="share-link" id="shareLink">share your jar</a>
+      <div class="meta-line">
+        <span id="ownerLabel"></span>'s wins &nbsp;·&nbsp;
+        <a class="switch-link" id="switchLink">switch</a>
+      </div>
+    </div>
+
+    <div class="links-row" id="sharedLinksRow" style="display:none;">
+      <a id="seeAllSharedLink" href="log.html">see all their wins</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- ============ SHARE MODAL ============ -->
+<div class="modal-backdrop hidden" id="shareModal">
+  <div class="modal">
+    <h3>share your jar</h3>
+    <p>anyone with this link can see your wins. it's a snapshot — new wins you add later won't update it automatically.</p>
+    <div class="link-box">
+      <input id="shareUrlInput" type="text" readonly>
+      <button class="btn btn-orange" id="copyLinkBtn" style="font-size:16px;padding:10px 16px;">copy</button>
+    </div>
+    <button class="modal-close" id="closeModalBtn">close</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function(){
+  const entryView = document.getElementById('entryView');
+  const jarView = document.getElementById('jarView');
+  const sharedBanner = document.getElementById('sharedBanner');
+  const ownerLinksRow = document.getElementById('ownerLinksRow');
+  const sharedLinksRow = document.getElementById('sharedLinksRow');
+  const addRow = document.getElementById('addRow');
+  const shakeBtn = document.getElementById('shakeBtn');
+
+  let mode = 'owner'; // 'owner' | 'shared'
+  let currentName = '';
+  let wins = [];
+  let sharedEncoded = '';
+
+  const shareParam = getShareParam();
+
+  function init(){
+    renderDoodles(document.getElementById('doodles'));
+    document.getElementById('jarSvgHolder').innerHTML = jarSVG();
+
+    if (shareParam) {
+      try {
+        const data = decodeShareData(shareParam);
+        mode = 'shared';
+        currentName = data.name;
+        wins = data.wins;
+        sharedEncoded = shareParam;
+        showSharedView();
+        return;
+      } catch(e) {
+        // bad link, fall through to normal flow
+      }
+    }
+
+    const current = getCurrentUser();
+    if (current) {
+      mode = 'owner';
+      currentName = current;
+      wins = getWins(currentName);
+      showJarView();
+    } else {
+      showEntryView();
+    }
+  }
+
+  function showEntryView(){
+    entryView.style.display = 'block';
+    jarView.style.display = 'none';
+    sharedBanner.style.display = 'none';
+  }
+
+  function showJarView(){
+    entryView.style.display = 'none';
+    sharedBanner.style.display = 'none';
+    jarView.style.display = 'block';
+    addRow.style.display = 'flex';
+    shakeBtn.style.display = 'inline-block';
+    ownerLinksRow.style.display = 'block';
+    sharedLinksRow.style.display = 'none';
+    document.getElementById('ownerLabel').textContent = currentName;
+    document.getElementById('seeAllLink').href = 'log.html';
+    renderAll();
+  }
+
+  function showSharedView(){
+    entryView.style.display = 'none';
+    jarView.style.display = 'block';
+    sharedBanner.style.display = 'block';
+    document.getElementById('sharedOwnerName').textContent = currentName;
+    addRow.style.display = 'none';
+    ownerLinksRow.style.display = 'none';
+    sharedLinksRow.style.display = 'block';
+    document.getElementById('seeAllSharedLink').href = 'log.html?jar=' + sharedEncoded;
+    renderAll();
+  }
+
+  function renderAll(){
+    renderJar();
+    updateCount();
+    updateQuote(wins.length ? wins[wins.length - 1] : null);
+  }
+
+  function renderJar(){
+    const layer = document.getElementById('starsLayer');
+    layer.innerHTML = '';
+    wins.forEach((w, i) => {
+      const pos = starPosition(w, i);
+      const el = document.createElement('div');
+      el.className = 'star';
+      el.style.left = pos.left;
+      el.style.top = pos.top;
+      el.innerHTML = starSVG(w.color);
+      layer.appendChild(el);
+    });
+  }
+
+  function updateCount(){
+    document.getElementById('countLine').innerHTML =
+      wins.length + (wins.length === 1 ? ' tiny win' : ' tiny wins') + ' and counting <span class="heart">♥</span>';
+  }
+
+  function updateQuote(win){
+    const block = document.getElementById('quoteBlock');
+    if (!win) { block.style.display = 'none'; return; }
+    block.style.display = 'block';
+    const textEl = document.getElementById('quoteText');
+    textEl.textContent = '"' + win.text + '"';
+    textEl.style.color = win.color;
+    document.getElementById('quoteDate').textContent = 'logged ' + formatDate(win.date);
+  }
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 1600);
+  }
+
+  /* ---------- entry view actions ---------- */
+
+  document.getElementById('openJarBtn').addEventListener('click', openJar);
+  document.getElementById('nameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') openJar();
+  });
+
+  function openJar(){
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) return;
+    setCurrentUser(name);
+    currentName = name;
+    mode = 'owner';
+    wins = getWins(currentName);
+    showJarView();
+  }
+
+  /* ---------- jar view actions ---------- */
+
+  document.getElementById('paintBtn').addEventListener('click', addWin);
+  document.getElementById('winInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addWin();
+  });
+
+  function addWin(){
+    const input = document.getElementById('winInput');
+    const text = input.value.trim();
+    if (!text) return;
+    const lastColor = wins.length ? wins[wins.length - 1].color : null;
+    const win = makeWin(text, lastColor);
+    wins.push(win);
+    saveWins(currentName, wins);
+    input.value = '';
+    renderJar();
+    updateCount();
+    updateQuote(win);
+    showToast('proud of you');
+  }
+
+  shakeBtn.addEventListener('click', () => {
+    if (!wins.length) {
+      const wrap = document.getElementById('jarWrap');
+      wrap.classList.remove('shaking'); void wrap.offsetWidth;
+      wrap.classList.add('shaking');
+      showToast(mode === 'shared' ? 'their jar is empty' : 'add a win first!');
+      return;
+    }
+    const wrap = document.getElementById('jarWrap');
+    wrap.classList.remove('shaking'); void wrap.offsetWidth;
+    wrap.classList.add('shaking');
+
+    const pick = wins[Math.floor(Math.random() * wins.length)];
+
+    const spot = document.getElementById('spotlightStar');
+    spot.classList.remove('show'); void spot.offsetWidth;
+    spot.innerHTML = starSVG(pick.color);
+    spot.classList.add('show');
+
+    updateQuote(pick);
+  });
+
+  document.getElementById('switchLink').addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_CURRENT);
+    window.location.href = 'index.html';
+  });
+
+  /* ---------- shared view actions ---------- */
+
+  const saveCopyBtn = document.getElementById('saveCopyBtn');
+  if (saveCopyBtn) saveCopyBtn.addEventListener('click', () => {
+    let name = currentName;
+    const existing = getUsers();
+    if (existing.includes(name)) {
+      let n = 2;
+      while (existing.includes(name + ' (' + n + ')')) n++;
+      name = name + ' (' + n + ')';
+    }
+    setCurrentUser(name);
+    saveWins(name, wins.map(w => ({ ...w, id: Date.now() + '-' + Math.random() })));
+    window.location.href = 'index.html';
+  });
+
+  const startOwnBtn = document.getElementById('startOwnBtn');
+  if (startOwnBtn) startOwnBtn.addEventListener('click', () => {
+    window.location.href = 'index.html';
+  });
+
+  /* ---------- share modal ---------- */
+
+  const shareLinkEl = document.getElementById('shareLink');
+  if (shareLinkEl) shareLinkEl.addEventListener('click', async () => {
+    if (!wins.length) {
+      showToast('paint a star first!');
+      return;
+    }
+    const url = buildShareUrl(currentName, wins);
+    const result = await shareLink(url, 'small wins jar', currentName + ' shared their small wins jar with you');
+    if (result.method === 'share') return;
+    document.getElementById('shareUrlInput').value = url;
+    document.getElementById('shareModal').classList.remove('hidden');
+    if (result.method === 'copy') showToast('link copied!');
+  });
+
+  document.getElementById('copyLinkBtn').addEventListener('click', async () => {
+    const input = document.getElementById('shareUrlInput');
+    input.select();
+    try { await navigator.clipboard.writeText(input.value); } catch(e){}
+    document.execCommand && document.execCommand('copy');
+    showToast('link copied!');
+  });
+
+  document.getElementById('closeModalBtn').addEventListener('click', () => {
+    document.getElementById('shareModal').classList.add('hidden');
+  });
+
+  init();
+})();
+</script>
+</body>
+</html>

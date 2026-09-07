@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>all your wins — small wins jar</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="page">
+  <a href="index.html" class="back-btn" id="backLink">&larr; back to the jar</a>
+
+  <h1 class="log-title">all <span id="possessive">your</span> wins</h1>
+  <p class="log-subtitle" id="logSubtitle"></p>
+
+  <div id="winsList"></div>
+  <div id="emptyState" class="empty-log" style="display:none;">
+    the jar is still empty.<br>every tiny win counts — go paint your first star.
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function(){
+  const shareParam = getShareParam();
+  let name = '';
+  let wins = [];
+
+  if (shareParam) {
+    try {
+      const data = decodeShareData(shareParam);
+      name = data.name;
+      wins = data.wins;
+      document.getElementById('possessive').textContent = 'their';
+      document.getElementById('backLink').textContent = '\u2190 back to the jar';
+      document.getElementById('backLink').href = 'index.html?jar=' + shareParam;
+    } catch(e) {
+      name = '';
+      wins = [];
+    }
+  } else {
+    name = getCurrentUser();
+    wins = name ? getWins(name) : [];
+    document.getElementById('backLink').href = 'index.html';
+  }
+
+  document.getElementById('logSubtitle').textContent =
+    (name || 'no one yet') + ' · ' + wins.length + (wins.length === 1 ? ' tiny win logged' : ' tiny wins logged');
+
+  const listEl = document.getElementById('winsList');
+  const emptyEl = document.getElementById('emptyState');
+
+  if (!wins.length) {
+    emptyEl.style.display = 'block';
+  } else {
+    // newest first
+    const sorted = [...wins].sort((a, b) => new Date(b.date) - new Date(a.date));
+    listEl.innerHTML = sorted.map(w => `
+      <div class="win-card" style="border-left-color:${w.color};">
+        <p class="win-text" style="color:${w.color};">
+          <span class="mini-star">${starSVG(w.color)}</span>${escapeHtml(w.text)}
+        </p>
+        <p class="win-date">logged ${formatDate(w.date)}</p>
+      </div>
+    `).join('');
+  }
+
+  function escapeHtml(str){
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+})();
+</script>
+</body>
+</html>

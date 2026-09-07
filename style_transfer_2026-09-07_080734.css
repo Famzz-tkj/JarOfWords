@@ -1,0 +1,492 @@
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Patrick+Hand&display=swap');
+
+:root{
+  --cream:#f8ede0;
+  --cream-2:#fbf3e8;
+  --paper:#fffaf3;
+  --ink:#7a3a20;
+  --olive:#a98a3f;
+  --olive-soft:#b79a58;
+  --blue:#4f7fa0;
+  --blue-soft:#cfe3ea;
+  --blue-deep:#3a6a8a;
+  --orange:#d97b45;
+  --orange-deep:#c2612c;
+  --pink:#cf7d92;
+  --green:#7c8c5a;
+  --gold:#c79a3a;
+  --red:#b5533f;
+  --line:#e3cfb4;
+  --shadow: 0 8px 24px rgba(122,58,32,0.08);
+}
+
+*{box-sizing:border-box;}
+
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--cream);
+  color:var(--ink);
+  font-family:'Patrick Hand', cursive;
+  min-height:100vh;
+}
+
+body{
+  display:flex;
+  justify-content:center;
+}
+
+.page{
+  width:100%;
+  max-width:480px;
+  min-height:100vh;
+  padding:36px 24px 60px;
+  position:relative;
+  background:
+    radial-gradient(circle at 15% 8%, rgba(207,231,238,0.35), transparent 40%),
+    radial-gradient(circle at 85% 12%, rgba(207,231,238,0.3), transparent 35%),
+    var(--cream);
+}
+
+.script{
+  font-family:'Caveat', cursive;
+}
+
+/* ---------- Header ---------- */
+.title{
+  font-family:'Caveat', cursive;
+  font-weight:700;
+  font-size:56px;
+  text-align:center;
+  color:var(--ink);
+  margin:0 0 2px;
+  line-height:1;
+}
+
+.subtitle{
+  font-family:'Caveat', cursive;
+  font-size:22px;
+  text-align:center;
+  color:var(--olive);
+  margin:0 0 28px;
+  font-style:italic;
+}
+
+/* ---------- Inputs & buttons ---------- */
+.row{
+  display:flex;
+  gap:10px;
+  align-items:stretch;
+}
+
+.input-pill{
+  flex:1;
+  border:2px solid var(--blue-soft);
+  background:var(--paper);
+  border-radius:999px;
+  padding:14px 20px;
+  font-family:'Caveat', cursive;
+  font-size:20px;
+  color:var(--ink);
+  outline:none;
+  min-width:0;
+}
+
+.input-pill::placeholder{
+  color:#c8b394;
+  font-style:italic;
+}
+
+.input-pill:focus{
+  border-color:var(--blue);
+}
+
+.btn{
+  font-family:'Caveat', cursive;
+  font-size:20px;
+  border:none;
+  border-radius:999px;
+  padding:14px 22px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:transform .15s ease, filter .15s ease, opacity .2s ease;
+}
+
+.btn:active{
+  transform:scale(0.96);
+}
+
+.btn-orange{
+  background:var(--orange);
+  color:#fff9f2;
+  box-shadow:0 6px 14px rgba(217,123,69,0.35);
+}
+
+.btn-orange:hover{ filter:brightness(1.05); }
+
+.btn-blue{
+  background:var(--blue-soft);
+  color:var(--blue-deep);
+}
+
+.btn-blue:disabled{
+  opacity:.55;
+  cursor:default;
+}
+
+.btn-outline{
+  background:transparent;
+  border:2px solid var(--blue-soft);
+  color:var(--blue-deep);
+}
+
+/* ---------- Jar scene ---------- */
+.jar-scene{
+  position:relative;
+  margin-top:26px;
+  padding:20px 0 6px;
+  min-height:340px;
+  overflow:hidden;
+}
+
+.doodles svg{
+  position:absolute;
+}
+
+.jar-wrap{
+  position:relative;
+  width:220px;
+  height:280px;
+  margin:0 auto;
+}
+
+.jar-wrap svg.jar-svg{
+  width:100%;
+  height:100%;
+  overflow:visible;
+}
+
+.jar-wrap.shaking{
+  animation:shake .5s ease;
+}
+
+@keyframes shake{
+  0%{ transform:rotate(0deg); }
+  15%{ transform:rotate(-4deg) translateX(-3px); }
+  30%{ transform:rotate(4deg) translateX(3px); }
+  45%{ transform:rotate(-3deg) translateX(-2px); }
+  60%{ transform:rotate(3deg) translateX(2px); }
+  75%{ transform:rotate(-2deg); }
+  100%{ transform:rotate(0deg); }
+}
+
+.stars-layer{
+  position:absolute;
+  inset:0;
+}
+
+.star{
+  position:absolute;
+  width:22px;
+  height:22px;
+  transform:translate(-50%,-50%) scale(0);
+  animation:pop-in .35s cubic-bezier(.34,1.56,.64,1) forwards;
+}
+
+@keyframes pop-in{
+  to{ transform:translate(-50%,-50%) scale(1); }
+}
+
+.star svg{ width:100%; height:100%; }
+
+.spotlight-star{
+  position:absolute;
+  left:50%;
+  top:-10px;
+  width:70px;
+  height:70px;
+  transform:translate(-50%,-20px) scale(0);
+  opacity:0;
+  pointer-events:none;
+  z-index:5;
+}
+
+.spotlight-star.show{
+  animation:spotlight-pop 1.9s ease forwards;
+}
+
+@keyframes spotlight-pop{
+  0%{ transform:translate(-50%,0) scale(0); opacity:0; }
+  15%{ transform:translate(-50%,-14px) scale(1.15); opacity:1; }
+  30%{ transform:translate(-50%,-10px) scale(1); opacity:1; }
+  80%{ transform:translate(-50%,-10px) scale(1); opacity:1; }
+  100%{ transform:translate(-50%,4px) scale(0.7); opacity:0; }
+}
+
+.toast{
+  position:absolute;
+  left:50%;
+  top:-6px;
+  transform:translate(-50%,6px);
+  background:var(--green);
+  color:#fdf8ee;
+  font-family:'Caveat', cursive;
+  font-size:20px;
+  padding:6px 18px;
+  border-radius:999px;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .25s ease, transform .25s ease;
+  white-space:nowrap;
+}
+
+.toast.show{
+  opacity:1;
+  transform:translate(-50%,0);
+}
+
+/* ---------- Below jar ---------- */
+.shake-btn-wrap{
+  text-align:center;
+  margin-top:18px;
+}
+
+.count-line{
+  text-align:center;
+  font-family:'Caveat', cursive;
+  font-size:22px;
+  color:var(--olive);
+  margin-top:16px;
+}
+
+.count-line .heart{
+  color:var(--pink);
+}
+
+.quote-block{
+  text-align:center;
+  margin-top:8px;
+  min-height:70px;
+}
+
+.quote-text{
+  font-family:'Caveat', cursive;
+  font-size:30px;
+  margin:6px 0 0;
+}
+
+.quote-date{
+  font-family:'Caveat', cursive;
+  font-size:19px;
+  color:var(--olive-soft);
+  margin:0;
+}
+
+.links-row{
+  text-align:center;
+  margin-top:26px;
+  font-family:'Caveat', cursive;
+  font-size:19px;
+  color:var(--olive-soft);
+}
+
+.links-row a{
+  color:var(--olive-soft);
+  text-decoration:underline;
+  cursor:pointer;
+}
+
+.links-row .switch-link{
+  color:var(--blue);
+}
+
+.links-row .share-link{
+  color:var(--orange-deep);
+}
+
+.meta-line{
+  margin-top:4px;
+}
+
+/* ---------- Name entry ---------- */
+.entry-wrap{
+  margin-top:120px;
+}
+
+.entry-note{
+  text-align:center;
+  font-family:'Caveat', cursive;
+  font-size:18px;
+  color:var(--olive-soft);
+  margin-top:18px;
+  padding:0 10px;
+  line-height:1.35;
+}
+
+/* ---------- Shared banner ---------- */
+.shared-banner{
+  background:var(--paper);
+  border:2px dashed var(--blue-soft);
+  border-radius:18px;
+  padding:14px 18px;
+  text-align:center;
+  font-family:'Caveat', cursive;
+  font-size:21px;
+  color:var(--blue-deep);
+  margin-bottom:8px;
+}
+
+.shared-banner .owner{
+  color:var(--orange-deep);
+}
+
+.shared-actions{
+  display:flex;
+  gap:10px;
+  justify-content:center;
+  margin-top:14px;
+  flex-wrap:wrap;
+}
+
+/* ---------- Modal ---------- */
+.modal-backdrop{
+  position:fixed;
+  inset:0;
+  background:rgba(122,58,32,0.25);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:24px;
+  z-index:50;
+}
+
+.modal-backdrop.hidden{ display:none; }
+
+.modal{
+  background:var(--paper);
+  border-radius:20px;
+  padding:24px;
+  max-width:400px;
+  width:100%;
+  box-shadow:var(--shadow);
+  text-align:center;
+}
+
+.modal h3{
+  font-family:'Caveat', cursive;
+  font-size:28px;
+  color:var(--ink);
+  margin:0 0 12px;
+}
+
+.modal p{
+  font-family:'Patrick Hand', cursive;
+  font-size:15px;
+  color:#8a7053;
+  margin:0 0 14px;
+}
+
+.link-box{
+  display:flex;
+  gap:8px;
+  margin-bottom:14px;
+}
+
+.link-box input{
+  flex:1;
+  border:2px solid var(--blue-soft);
+  border-radius:999px;
+  padding:10px 14px;
+  font-family:'Patrick Hand', cursive;
+  font-size:13px;
+  color:var(--ink);
+  background:var(--cream-2);
+  min-width:0;
+}
+
+.modal-close{
+  margin-top:6px;
+  background:none;
+  border:none;
+  color:var(--olive-soft);
+  font-family:'Caveat', cursive;
+  font-size:18px;
+  text-decoration:underline;
+  cursor:pointer;
+}
+
+/* ---------- Log page ---------- */
+.back-btn{
+  display:inline-block;
+  background:var(--blue-soft);
+  color:var(--blue-deep);
+  font-family:'Caveat', cursive;
+  font-size:19px;
+  padding:10px 20px;
+  border-radius:999px;
+  text-decoration:none;
+  margin-bottom:18px;
+}
+
+.log-title{
+  font-family:'Caveat', cursive;
+  font-weight:700;
+  font-size:44px;
+  text-align:center;
+  margin:6px 0 2px;
+  color:var(--ink);
+}
+
+.log-subtitle{
+  text-align:center;
+  font-family:'Caveat', cursive;
+  font-size:20px;
+  color:var(--olive);
+  margin:0 0 26px;
+}
+
+.win-card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-left:6px solid var(--orange);
+  border-radius:14px;
+  padding:16px 18px;
+  margin-bottom:14px;
+  box-shadow:var(--shadow);
+}
+
+.win-card .win-text{
+  font-family:'Caveat', cursive;
+  font-size:26px;
+  margin:0 0 4px;
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+.win-card .win-text .mini-star{
+  width:16px;
+  height:16px;
+  flex:none;
+}
+
+.win-card .win-date{
+  font-family:'Caveat', cursive;
+  font-size:17px;
+  color:var(--olive-soft);
+  margin:0;
+}
+
+.empty-log{
+  text-align:center;
+  font-family:'Caveat', cursive;
+  font-size:22px;
+  color:var(--olive-soft);
+  margin-top:60px;
+  line-height:1.5;
+}
+
+@media (max-width:360px){
+  .title{ font-size:46px; }
+  .jar-wrap{ width:190px; height:240px; }
+}
